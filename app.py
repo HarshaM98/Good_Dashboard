@@ -61,8 +61,46 @@ else:
     total_profit = filtered_df["Profit"].sum()
     margin_rate = (total_profit / total_sales) if total_sales != 0 else 0
 
-# ---- Custom Visualizations Page ----
-if page == "Custom Visualizations":
+# ---- Overview & Analysis Page ----
+if page == "Overview & Analysis":
+    st.title("Business Overview & Analysis")
+
+    kpi_cols = st.columns(4)
+    kpis = [
+        ("Sales", f"${total_sales:,.2f}"),
+        ("Quantity Sold", f"{total_quantity:,.0f}"),
+        ("Profit", f"${total_profit:,.2f}"),
+        ("Margin Rate", f"{(margin_rate * 100):.2f}%")
+    ]
+    for col, (title, value) in zip(kpi_cols, kpis):
+        col.metric(title, value)
+
+    # ---- Sales Over Time Chart ----
+    sales_trend = filtered_df.groupby("Order Date")["Sales"].sum().reset_index()
+    fig_sales = px.line(
+        sales_trend,
+        x="Order Date",
+        y="Sales",
+        title="Sales Over Time",
+        template="plotly_dark",
+        line_shape="spline",
+        markers=True
+    )
+    fig_sales.update_traces(line=dict(width=2), marker=dict(size=4))
+    fig_sales.update_layout(yaxis_title="Total Sales", xaxis_title="Date")
+    st.plotly_chart(fig_sales, use_container_width=True)
+
+elif page == "Product Insights":
+    st.title("Product Performance")
+    top_products = filtered_df.groupby("Product Name")[
+        filtered_df.select_dtypes(include=["number"]).columns].sum().reset_index()
+    top_10 = top_products.sort_values(by="Sales", ascending=False).head(10)
+
+    fig_bar = px.bar(top_10, x="Sales", y="Product Name", orientation="h", title="Top 10 Best-Selling Products",
+                     template="plotly_dark")
+    st.plotly_chart(fig_bar, use_container_width=True)
+
+elif page == "Custom Visualizations":
     st.title("Custom Data Visualizations")
 
     # Pie Chart for Sales by Category
@@ -90,3 +128,9 @@ if page == "Custom Visualizations":
         st.plotly_chart(fig_box, use_container_width=True)
     else:
         st.warning("No data available for profit visualization.")
+
+elif page == "Download Report":
+    st.title("Download Report")
+    st.write("Export filtered data to CSV for further analysis.")
+    csv = filtered_df.to_csv(index=False).encode('utf-8')
+    st.download_button(label="Download CSV", data=csv, file_name="SuperStore_Report.csv", mime='text/csv')
