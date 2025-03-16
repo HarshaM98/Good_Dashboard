@@ -74,7 +74,19 @@ if page == "Overview":
     for col, (title, value) in zip(kpi_cols, kpis):
         col.metric(title, value)
 
-    fig_sales = px.line(filtered_df, x="Order Date", y="Sales", title="Sales Over Time", template="plotly_dark")
+    # ---- Improved Sales Over Time Chart ----
+    sales_trend = filtered_df.groupby("Order Date")["Sales"].sum().reset_index()
+    fig_sales = px.line(
+        sales_trend,
+        x="Order Date",
+        y="Sales",
+        title="Sales Over Time",
+        template="plotly_dark",
+        line_shape="spline",
+        markers=True
+    )
+    fig_sales.update_traces(line=dict(width=2), marker=dict(size=4))
+    fig_sales.update_layout(yaxis_title="Total Sales", xaxis_title="Date")
     st.plotly_chart(fig_sales, use_container_width=True)
 
 elif page == "Detailed Analysis":
