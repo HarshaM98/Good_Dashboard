@@ -21,7 +21,8 @@ df_original = load_data()
 st.sidebar.title("Filters")
 
 # Multi-Page Navigation
-page = st.sidebar.radio("Select View:", ["Overview", "Detailed Analysis", "Product Insights", "Download Report"])
+page = st.sidebar.radio("Select View:", ["Overview", "Detailed Analysis", "Product Insights", "Custom Visualizations",
+                                         "Download Report"])
 
 # Region Filter
 selected_region = st.sidebar.selectbox("Select Region", ["All"] + sorted(df_original["Region"].dropna().unique()))
@@ -108,6 +109,21 @@ elif page == "Product Insights":
     fig_bar = px.bar(top_10, x="Sales", y="Product Name", orientation="h", title="Top 10 Best-Selling Products",
                      template="plotly_dark")
     st.plotly_chart(fig_bar, use_container_width=True)
+
+elif page == "Custom Visualizations":
+    st.title("Custom Data Visualizations")
+
+    # Correlation Heatmap
+    st.subheader("Correlation Heatmap")
+    numerical_data = filtered_df.select_dtypes(include=["number"])
+    corr_matrix = numerical_data.corr()
+    fig_corr = px.imshow(corr_matrix, text_auto=True, title="Feature Correlation Heatmap")
+    st.plotly_chart(fig_corr, use_container_width=True)
+
+    # Sales Distribution Histogram
+    st.subheader("Sales Distribution")
+    fig_hist = px.histogram(filtered_df, x="Sales", nbins=50, title="Sales Distribution")
+    st.plotly_chart(fig_hist, use_container_width=True)
 
 elif page == "Download Report":
     st.title("Download Report")
