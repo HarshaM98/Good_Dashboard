@@ -72,8 +72,16 @@ if page == "Overview":
         ("Profit", f"${total_profit:,.2f}"),
         ("Margin Rate", f"{(margin_rate * 100):.2f}%")
     ]
+
     for col, (title, value) in zip(kpi_cols, kpis):
-        col.metric(title, value)
+        col.markdown(
+            f"""
+            <div style='text-align: center; padding: 15px; border-radius: 10px; background-color: #1E90FF; color: white; font-size: 18px; font-weight: bold;'>
+                {title}: {value}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     # ---- Improved Sales Over Time Chart ----
     sales_trend = filtered_df.groupby("Order Date")["Sales"].sum().reset_index()
@@ -109,21 +117,6 @@ elif page == "Product Insights":
     fig_bar = px.bar(top_10, x="Sales", y="Product Name", orientation="h", title="Top 10 Best-Selling Products",
                      template="plotly_dark")
     st.plotly_chart(fig_bar, use_container_width=True)
-
-elif page == "Custom Visualizations":
-    st.title("Custom Data Visualizations")
-
-    # Correlation Heatmap
-    st.subheader("Correlation Heatmap")
-    numerical_data = filtered_df.select_dtypes(include=["number"])
-    corr_matrix = numerical_data.corr()
-    fig_corr = px.imshow(corr_matrix, text_auto=True, title="Feature Correlation Heatmap")
-    st.plotly_chart(fig_corr, use_container_width=True)
-
-    # Sales Distribution Histogram
-    st.subheader("Sales Distribution")
-    fig_hist = px.histogram(filtered_df, x="Sales", nbins=50, title="Sales Distribution")
-    st.plotly_chart(fig_hist, use_container_width=True)
 
 elif page == "Download Report":
     st.title("Download Report")
