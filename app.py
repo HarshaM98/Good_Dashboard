@@ -21,7 +21,7 @@ df_original = load_data()
 st.sidebar.title("Filters")
 
 # Multi-Page Navigation
-page = st.sidebar.radio("Select View:", ["Overview", "Detailed Analysis", "Product Insights"])
+page = st.sidebar.radio("Select View:", ["Overview", "Detailed Analysis", "Product Insights", "Download Report"])
 
 # Region Filter
 selected_region = st.sidebar.selectbox("Select Region", ["All"] + sorted(df_original["Region"].dropna().unique()))
@@ -108,6 +108,12 @@ elif page == "Product Insights":
     fig_bar = px.bar(top_10, x="Sales", y="Product Name", orientation="h", title="Top 10 Best-Selling Products",
                      template="plotly_dark")
     st.plotly_chart(fig_bar, use_container_width=True)
+
+elif page == "Download Report":
+    st.title("Download Report")
+    st.write("Export filtered data to CSV for further analysis.")
+    csv = filtered_df.to_csv(index=False).encode('utf-8')
+    st.download_button(label="Download CSV", data=csv, file_name="SuperStore_Report.csv", mime='text/csv')
 
 # ---- Alerts for Sudden Drops ----
 avg_sales = df_original["Sales"].mean()
