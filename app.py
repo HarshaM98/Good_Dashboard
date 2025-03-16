@@ -21,8 +21,8 @@ df_original = load_data()
 st.sidebar.title("Filters")
 
 # Multi-Page Navigation
-page = st.sidebar.radio("Select View:", ["Overview", "Detailed Analysis", "Product Insights", "Custom Visualizations",
-                                         "Download Report"])
+page = st.sidebar.radio("Select View:",
+                        ["Overview & Analysis", "Product Insights", "Custom Visualizations", "Download Report"])
 
 # Region Filter
 selected_region = st.sidebar.selectbox("Select Region", ["All"] + sorted(df_original["Region"].dropna().unique()))
@@ -61,9 +61,9 @@ else:
     total_profit = filtered_df["Profit"].sum()
     margin_rate = (total_profit / total_sales) if total_sales != 0 else 0
 
-# ---- Multi-Page Views ----
-if page == "Overview":
-    st.title("Business Overview")
+# ---- Combined Overview & Analysis Page ----
+if page == "Overview & Analysis":
+    st.title("Business Overview & Analysis")
 
     kpi_cols = st.columns(4)
     kpis = [
@@ -73,9 +73,16 @@ if page == "Overview":
         ("Margin Rate", f"{(margin_rate * 100):.2f}%")
     ]
     for col, (title, value) in zip(kpi_cols, kpis):
-        col.metric(title, value)
+        col.markdown(
+            f"""
+            <div style='text-align: center; padding: 15px; border-radius: 10px; background-color: #1E90FF; color: white; font-size: 18px; font-weight: bold;'>
+                {title}: {value}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-    # ---- Improved Sales Over Time Chart ----
+    # ---- Sales Over Time Chart ----
     sales_trend = filtered_df.groupby("Order Date")["Sales"].sum().reset_index()
     fig_sales = px.line(
         sales_trend,
@@ -90,8 +97,8 @@ if page == "Overview":
     fig_sales.update_layout(yaxis_title="Total Sales", xaxis_title="Date")
     st.plotly_chart(fig_sales, use_container_width=True)
 
-elif page == "Detailed Analysis":
-    st.title("Detailed Sales & Profit Trends")
+    # ---- KPI Trend Analysis ----
+    st.subheader("Detailed Sales & Profit Trends")
     selected_kpi = st.radio("Select KPI to Analyze:", ["Sales", "Profit", "Quantity"], horizontal=True)
 
     daily_data = filtered_df.groupby("Order Date")[
@@ -109,26 +116,6 @@ elif page == "Product Insights":
     fig_bar = px.bar(top_10, x="Sales", y="Product Name", orientation="h", title="Top 10 Best-Selling Products",
                      template="plotly_dark")
     st.plotly_chart(fig_bar, use_container_width=True)
-
-elif page == "Custom Visualizations":
-    st.title("Custom Data Visualizations")
-
-    # Pie Chart for Sales by Category
-    st.subheader("Sales Distribution by Category")
-    if not filtered_df.empty:
-        category_sales = filtered_df.groupby("Category")["Sales"].sum().reset_index()
-        fig_pie = px.pie(category_sales, names="Category", values="Sales", title="Sales Breakdown by Category")
-        st.plotly_chart(fig_pie, use_container_width=True)
-    else:
-        st.warning("No data available for category sales visualization.")
-
-    # Box Plot for Profit Distribution
-    st.subheader("Profit Distribution by Category")
-    if not filtered_df.empty:
-        fig_box = px.box(filtered_df, x="Category", y="Profit", title="Profit Distribution by Category")
-        st.plotly_chart(fig_box, use_container_width=True)
-    else:
-        st.warning("No data available for profit visualization.")
 
 elif page == "Download Report":
     st.title("Download Report")
