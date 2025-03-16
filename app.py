@@ -79,10 +79,10 @@ for col, (title, value, change) in zip(kpi_cols, kpis):
 st.subheader("Visualize KPI Trends and Top Products")
 selected_kpi = st.radio("Select KPI to display:", ["Sales", "Quantity", "Profit", "Margin Rate"], horizontal=True)
 
-daily_data = filtered_df.groupby("Order Date").sum().reset_index()
+daily_data = filtered_df.groupby("Order Date")[filtered_df.select_dtypes(include=["number"]).columns].sum().reset_index()
 daily_data["Margin Rate"] = daily_data["Profit"] / daily_data["Sales"].replace(0, 1)
 
-top_products = filtered_df.groupby("Product Name").sum().reset_index()
+top_products = filtered_df.groupby("Product Name")[filtered_df.select_dtypes(include=["number"]).columns].sum().reset_index()
 top_products["Margin Rate"] = top_products["Profit"] / top_products["Sales"].replace(0, 1)
 top_10 = top_products.sort_values(by=selected_kpi, ascending=False).head(10)
 
